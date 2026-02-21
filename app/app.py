@@ -1,10 +1,8 @@
 import streamlit as st
-import json
-import os
 
-# --------------------------------------------------
+# =========================================================
 # PAGE CONFIG
-# --------------------------------------------------
+# =========================================================
 
 st.set_page_config(
     page_title="ClashWiz",
@@ -12,83 +10,89 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --------------------------------------------------
-# BACKGROUND + GLASS UI
-# --------------------------------------------------
+# =========================================================
+# 🔥 PUT YOUR ROYALE API PERMALINK COMMIT HASH HERE
+# =========================================================
 
-def set_background():
-    st.markdown("""
-    <style>
-    .stApp {
-        background-image: url("app/assets/background_blur.jpg");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }
+ROYALE_COMMIT = "PUT_YOUR_COMMIT_HASH_HERE"
+BASE_IMAGE_URL = f"https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/{ROYALE_COMMIT}/cards"
 
-    .glass {
-        background: rgba(0, 0, 0, 0.75);
-        padding: 30px;
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-    }
+# =========================================================
+# BACKGROUND + GLASS THEME
+# =========================================================
 
-    h1, h2, h3 {
-        color: #FFD700;
-    }
+st.markdown("""
+<style>
+.stApp {
+    background-image: url("app/assets/background_blur.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
 
-    .stTextInput>div>div>input {
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }
+.glass {
+    background: rgba(0, 0, 0, 0.72);
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
 
-    .stSelectbox>div>div {
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }
+h1, h2, h3 {
+    color: #FFD700;
+}
 
-    .stButton>button {
-        background-color: #1E3A8A;
-        color: white;
-        border-radius: 8px;
-        height: 3em;
-        font-weight: bold;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+.stTextInput>div>div>input {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
 
-set_background()
+.stSelectbox>div>div {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
 
-# --------------------------------------------------
-# LOAD CARD DATA
-# --------------------------------------------------
+.stButton>button {
+    background-color: #1E3A8A;
+    color: white;
+    border-radius: 8px;
+    height: 3em;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
 
-METADATA_PATH = "app/assets/card_metadata.json"
-CARDS_PATH = "app/assets/cards/"
+# =========================================================
+# SAMPLE CARD DATA (expand later or load dynamically)
+# =========================================================
 
-if not os.path.exists(METADATA_PATH):
-    st.error("card_metadata.json not found.")
-    st.stop()
-
-with open(METADATA_PATH, "r") as f:
-    card_data = json.load(f)
+card_data = {
+    "hog_rider": {"name": "Hog Rider", "category": "Troops", "elixir": 4, "rarity": "Rare"},
+    "fireball": {"name": "Fireball", "category": "Spells", "elixir": 4, "rarity": "Rare"},
+    "giant": {"name": "Giant", "category": "Troops", "elixir": 5, "rarity": "Rare"},
+    "zap": {"name": "Zap", "category": "Spells", "elixir": 2, "rarity": "Common"},
+    "baby_dragon": {"name": "Baby Dragon", "category": "Troops", "elixir": 4, "rarity": "Epic"},
+    "mega_knight": {"name": "Mega Knight", "category": "Troops", "elixir": 7, "rarity": "Legendary"},
+    "archers": {"name": "Archers", "category": "Troops", "elixir": 3, "rarity": "Common"},
+    "goblin_barrel": {"name": "Goblin Barrel", "category": "Spells", "elixir": 3, "rarity": "Epic"},
+}
 
 card_keys = list(card_data.keys())
 
-# --------------------------------------------------
-# UI START
-# --------------------------------------------------
+# =========================================================
+# MAIN UI
+# =========================================================
 
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 
 st.title("ClashWiz")
-st.caption("Clash Royale Companion UI")
+st.caption("Clash Royale Companion Interface")
 
 st.divider()
 
-# --------------------------------------------------
+# =========================================================
 # SEARCH + FILTER
-# --------------------------------------------------
+# =========================================================
 
 col1, col2 = st.columns([2,1])
 
@@ -101,9 +105,9 @@ with col2:
         ["All", "Troops", "Spells", "Buildings"]
     )
 
-# --------------------------------------------------
-# FILTER LOGIC
-# --------------------------------------------------
+# =========================================================
+# FILTER CARDS
+# =========================================================
 
 filtered_cards = []
 
@@ -118,34 +122,38 @@ for key in card_keys:
 
     filtered_cards.append(key)
 
-# --------------------------------------------------
+# =========================================================
 # CARD GRID DISPLAY
-# --------------------------------------------------
+# =========================================================
 
 st.subheader("Cards")
 
 cols = st.columns(4)
 
 for i, key in enumerate(filtered_cards):
+
     card = card_data[key]
-    image_path = os.path.join(CARDS_PATH, f"{key}.png")
+    image_url = f"{BASE_IMAGE_URL}/{key.replace('_','-')}.png"
 
     with cols[i % 4]:
-        if os.path.exists(image_path):
-            st.image(image_path, use_container_width=True)
+        st.image(image_url, use_container_width=True)
 
         if st.button(card["name"], key=f"btn_{key}"):
             st.session_state.selected_card = key
 
-# --------------------------------------------------
-# CARD DETAILS PANEL
-# --------------------------------------------------
+# =========================================================
+# CARD DETAIL PANEL
+# =========================================================
 
 if "selected_card" in st.session_state:
+
     selected = card_data[st.session_state.selected_card]
+    detail_image_url = f"{BASE_IMAGE_URL}/{st.session_state.selected_card.replace('_','-')}.png"
 
     st.divider()
     st.subheader(selected["name"])
+
+    st.image(detail_image_url, width=220)
 
     col1, col2, col3 = st.columns(3)
 
@@ -159,9 +167,9 @@ if "selected_card" in st.session_state:
         st.metric("Category", selected["category"])
 
     st.markdown("### Win Rate")
-    st.write("Coming from analytics model...")
+    st.write("Will connect to analytics model.")
 
     st.markdown("### Hard Counters")
-    st.write("Counter data will appear here.")
+    st.write("Will connect to matchup engine.")
 
 st.markdown('</div>', unsafe_allow_html=True)
