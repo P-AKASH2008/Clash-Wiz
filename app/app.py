@@ -1,5 +1,6 @@
 import streamlit as st
 import base64
+import requests
 
 # =========================================================
 # CONFIG
@@ -12,7 +13,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# BACKGROUND (BASE64 FIX)
+# BACKGROUND
 # =========================================================
 
 def set_background(image_file):
@@ -30,7 +31,7 @@ def set_background(image_file):
     }}
 
     .glass {{
-        background: rgba(0, 0, 0, 0.78);
+        background: rgba(0, 0, 0, 0.80);
         padding: 30px;
         border-radius: 20px;
         backdrop-filter: blur(6px);
@@ -45,7 +46,7 @@ def set_background(image_file):
         color: white;
         border-radius: 8px;
         height: 2.5em;
-        font-size: 12px;
+        font-size: 11px;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -53,45 +54,34 @@ def set_background(image_file):
 set_background("app/assets/background_blur.jpg")
 
 # =========================================================
-# ROYALE API BASE URL
+# FETCH ALL CARDS FROM ROYALEAPI
 # =========================================================
 
-BASE_IMAGE_URL = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards"
+@st.cache_data
+def fetch_all_cards():
+    url = "https://api.github.com/repos/RoyaleAPI/cr-api-assets/contents/cards-150-gold"
+    response = requests.get(url)
+    data = response.json()
+
+    card_names = []
+    for file in data:
+        if file["name"].endswith(".png"):
+            card_names.append(file["name"].replace(".png",""))
+
+    return sorted(card_names)
+
+CARD_LIST = fetch_all_cards()
+
+BASE_IMAGE_URL = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards-150-gold"
 
 # =========================================================
-# FULL CARD LIST (150+ CARDS)
-# =========================================================
-
-CARD_LIST = [
-    "archers","arrows","baby_dragon","balloon","barbarians","barbarian_barrel",
-    "battle_healer","battle_ram","bats","bomb_tower","bomber","bowler",
-    "cannon","cannon_cart","clone","dark_prince","dart_goblin","earthquake",
-    "electro_dragon","electro_giant","electro_spirit","elite_barbarians",
-    "elixir_collector","executioner","fire_spirits","fireball","fisherman",
-    "flying_machine","freeze","furnace","giant","giant_skeleton","giant_snowball",
-    "goblin_barrel","goblin_cage","goblin_drill","goblin_gang","goblins",
-    "golden_knight","golem","graveyard","guards","heal_spirit","hog_rider",
-    "hunter","ice_golem","ice_spirit","ice_wizard","inferno_dragon","inferno_tower",
-    "knight","lava_hound","lightning","little_prince","lumberjack",
-    "magic_archer","mega_knight","mega_minion","miner","mini_pekka",
-    "minion_horde","minions","mirror","monk","mother_witch",
-    "musketeer","night_witch","pekka","phoenix","poison",
-    "prince","princess","rage","ram_rider","rascals",
-    "rocket","royal_delivery","royal_giant","royal_ghost","royal_hogs",
-    "royal_recruits","skeleton_army","skeleton_barrel","skeleton_dragons",
-    "skeleton_king","skeletons","sparky","spear_goblins","tesla",
-    "the_log","three_musketeers","tornado","valkyrie","wall_breakers",
-    "witch","wizard","zap","zappies"
-]
-
-# =========================================================
-# UI START
+# UI
 # =========================================================
 
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 
 st.title("ClashWiz")
-st.caption("All Clash Royale Cards")
+st.caption("All Clash Royale Cards + Evolutions")
 
 st.divider()
 
@@ -99,38 +89,38 @@ search = st.text_input("Search Card")
 
 filtered_cards = [
     card for card in CARD_LIST
-    if search.lower() in card.replace("_"," ").lower()
+    if search.lower() in card.replace("-"," ").lower()
 ]
 
 # =========================================================
-# 8 CARDS PER ROW
+# DISPLAY 8 PER ROW
 # =========================================================
 
-st.subheader("Cards")
+st.subheader(f"{len(filtered_cards)} Cards Found")
 
 cols = st.columns(8)
 
 for i, key in enumerate(filtered_cards):
 
-    image_url = f"{BASE_IMAGE_URL}/{key.replace('_','-')}.png"
+    image_url = f"{BASE_IMAGE_URL}/{key}.png"
 
     with cols[i % 8]:
         st.image(image_url, width=90)
 
-        if st.button(key.replace("_"," ").title(), key=f"btn_{key}"):
+        if st.button(key.replace("-"," ").title(), key=f"btn_{key}"):
             st.session_state.selected_card = key
 
 # =========================================================
-# CARD DETAILS
+# CARD DETAIL
 # =========================================================
 
 if "selected_card" in st.session_state:
 
     st.divider()
-    name = st.session_state.selected_card.replace("_"," ").title()
-    detail_url = f"{BASE_IMAGE_URL}/{st.session_state.selected_card.replace('_','-')}.png"
+    name = st.session_state.selected_card.replace("-"," ").title()
+    detail_url = f"{BASE_IMAGE_URL}/{st.session_state.selected_card}.png"
 
     st.subheader(name)
-    st.image(detail_url, width=200)
+    st.image(detail_url, width=220)
 
 st.markdown('</div>', unsafe_allow_html=True)
