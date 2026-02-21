@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 
 # =========================================================
 # PAGE CONFIG
@@ -11,59 +12,67 @@ st.set_page_config(
 )
 
 # =========================================================
-# 🔥 PUT YOUR ROYALE API PERMALINK COMMIT HASH HERE
+# BACKGROUND FIX (BASE64 – WORKS ON STREAMLIT CLOUD)
 # =========================================================
 
-ROYALE_COMMIT = "PUT_YOUR_COMMIT_HASH_HERE"
-BASE_IMAGE_URL = f"https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/{ROYALE_COMMIT}/cards"
+def set_background(image_file):
+    with open(image_file, "rb") as f:
+        data = f.read()
+    encoded = base64.b64encode(data).decode()
+
+    st.markdown(f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+
+    .glass {{
+        background: rgba(0, 0, 0, 0.78);
+        padding: 35px;
+        border-radius: 20px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+    }}
+
+    h1, h2, h3 {{
+        color: #FFD700;
+    }}
+
+    .stTextInput>div>div>input {{
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }}
+
+    .stSelectbox>div>div {{
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }}
+
+    .stButton>button {{
+        background-color: #1E3A8A;
+        color: white;
+        border-radius: 10px;
+        height: 3em;
+        font-weight: bold;
+        border: 1px solid rgba(255,255,255,0.1);
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# IMPORTANT: this must exist
+set_background("app/assets/background_blur.jpg")
 
 # =========================================================
-# BACKGROUND + GLASS THEME
+# ROYALE API IMAGE BASE (FIXED)
 # =========================================================
 
-st.markdown("""
-<style>
-.stApp {
-    background-image: url("app/assets/background_blur.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
-
-.glass {
-    background: rgba(0, 0, 0, 0.72);
-    padding: 30px;
-    border-radius: 20px;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-}
-
-h1, h2, h3 {
-    color: #FFD700;
-}
-
-.stTextInput>div>div>input {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
-.stSelectbox>div>div {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
-.stButton>button {
-    background-color: #1E3A8A;
-    color: white;
-    border-radius: 8px;
-    height: 3em;
-    font-weight: bold;
-}
-</style>
-""", unsafe_allow_html=True)
+BASE_IMAGE_URL = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards"
 
 # =========================================================
-# SAMPLE CARD DATA (expand later or load dynamically)
+# SAMPLE CARD DATA
 # =========================================================
 
 card_data = {
@@ -80,7 +89,7 @@ card_data = {
 card_keys = list(card_data.keys())
 
 # =========================================================
-# MAIN UI
+# UI START
 # =========================================================
 
 st.markdown('<div class="glass">', unsafe_allow_html=True)
@@ -94,7 +103,7 @@ st.divider()
 # SEARCH + FILTER
 # =========================================================
 
-col1, col2 = st.columns([2,1])
+col1, col2 = st.columns([2, 1])
 
 with col1:
     search = st.text_input("Search Card")
@@ -106,7 +115,7 @@ with col2:
     )
 
 # =========================================================
-# FILTER CARDS
+# FILTER LOGIC
 # =========================================================
 
 filtered_cards = []
@@ -123,7 +132,7 @@ for key in card_keys:
     filtered_cards.append(key)
 
 # =========================================================
-# CARD GRID DISPLAY
+# CARD GRID
 # =========================================================
 
 st.subheader("Cards")
@@ -131,7 +140,6 @@ st.subheader("Cards")
 cols = st.columns(4)
 
 for i, key in enumerate(filtered_cards):
-
     card = card_data[key]
     image_url = f"{BASE_IMAGE_URL}/{key.replace('_','-')}.png"
 
@@ -142,7 +150,7 @@ for i, key in enumerate(filtered_cards):
             st.session_state.selected_card = key
 
 # =========================================================
-# CARD DETAIL PANEL
+# CARD DETAILS
 # =========================================================
 
 if "selected_card" in st.session_state:
@@ -152,7 +160,6 @@ if "selected_card" in st.session_state:
 
     st.divider()
     st.subheader(selected["name"])
-
     st.image(detail_image_url, width=220)
 
     col1, col2, col3 = st.columns(3)
@@ -167,9 +174,9 @@ if "selected_card" in st.session_state:
         st.metric("Category", selected["category"])
 
     st.markdown("### Win Rate")
-    st.write("Will connect to analytics model.")
+    st.write("Coming soon from analytics.")
 
     st.markdown("### Hard Counters")
-    st.write("Will connect to matchup engine.")
+    st.write("Coming soon from matchup engine.")
 
 st.markdown('</div>', unsafe_allow_html=True)
