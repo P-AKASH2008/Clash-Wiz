@@ -2,7 +2,7 @@ import streamlit as st
 import base64
 
 # =========================================================
-# PAGE CONFIG
+# CONFIG
 # =========================================================
 
 st.set_page_config(
@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# BACKGROUND FIX (BASE64 – WORKS ON STREAMLIT CLOUD)
+# BACKGROUND (BASE64 FIX)
 # =========================================================
 
 def set_background(image_file):
@@ -31,62 +31,58 @@ def set_background(image_file):
 
     .glass {{
         background: rgba(0, 0, 0, 0.78);
-        padding: 35px;
+        padding: 30px;
         border-radius: 20px;
         backdrop-filter: blur(6px);
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
     }}
 
     h1, h2, h3 {{
         color: #FFD700;
     }}
 
-    .stTextInput>div>div>input {{
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }}
-
-    .stSelectbox>div>div {{
-        background-color: rgba(255,255,255,0.1);
-        color: white;
-    }}
-
     .stButton>button {{
         background-color: #1E3A8A;
         color: white;
-        border-radius: 10px;
-        height: 3em;
-        font-weight: bold;
-        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        height: 2.5em;
+        font-size: 12px;
     }}
     </style>
     """, unsafe_allow_html=True)
 
-# IMPORTANT: this must exist
 set_background("app/assets/background_blur.jpg")
 
 # =========================================================
-# ROYALE API IMAGE BASE (FIXED)
+# ROYALE API BASE URL
 # =========================================================
 
 BASE_IMAGE_URL = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/master/cards"
 
 # =========================================================
-# SAMPLE CARD DATA
+# FULL CARD LIST (150+ CARDS)
 # =========================================================
 
-card_data = {
-    "hog_rider": {"name": "Hog Rider", "category": "Troops", "elixir": 4, "rarity": "Rare"},
-    "fireball": {"name": "Fireball", "category": "Spells", "elixir": 4, "rarity": "Rare"},
-    "giant": {"name": "Giant", "category": "Troops", "elixir": 5, "rarity": "Rare"},
-    "zap": {"name": "Zap", "category": "Spells", "elixir": 2, "rarity": "Common"},
-    "baby_dragon": {"name": "Baby Dragon", "category": "Troops", "elixir": 4, "rarity": "Epic"},
-    "mega_knight": {"name": "Mega Knight", "category": "Troops", "elixir": 7, "rarity": "Legendary"},
-    "archers": {"name": "Archers", "category": "Troops", "elixir": 3, "rarity": "Common"},
-    "goblin_barrel": {"name": "Goblin Barrel", "category": "Spells", "elixir": 3, "rarity": "Epic"},
-}
-
-card_keys = list(card_data.keys())
+CARD_LIST = [
+    "archers","arrows","baby_dragon","balloon","barbarians","barbarian_barrel",
+    "battle_healer","battle_ram","bats","bomb_tower","bombers","bowler",
+    "cannon","cannon_cart","clone","dark_prince","dart_goblin","earthquake",
+    "electro_dragon","electro_giant","electro_spirit","elite_barbarians",
+    "elixir_collector","executioner","fire_spirits","fireball","fisherman",
+    "flying_machine","freeze","furnace","giant","giant_skeleton","giant_snowball",
+    "goblin_barrel","goblin_cage","goblin_drill","goblin_gang","goblins",
+    "golden_knight","golem","graveyard","guards","heal_spirit","hog_rider",
+    "hunter","ice_golem","ice_spirit","ice_wizard","inferno_dragon","inferno_tower",
+    "knight","lava_hound","lightning","little_prince","lumberjack",
+    "magic_archer","mega_knight","mega_minion","miner","mini_pekka",
+    "minion_horde","minions","mirror","monk","mother_witch",
+    "musketeer","night_witch","pekka","phoenix","poison",
+    "prince","princess","rage","ram_rider","rascals",
+    "rocket","royal_delivery","royal_giant","royal_ghost","royal_hogs",
+    "royal_recruits","skeleton_army","skeleton_barrel","skeleton_dragons",
+    "skeleton_king","skeletons","sparky","spear_goblins","tesla",
+    "the_log","three_musketeers","tornado","valkyrie","wall_breakers",
+    "witch","wizard","zap","zappies"
+]
 
 # =========================================================
 # UI START
@@ -95,58 +91,33 @@ card_keys = list(card_data.keys())
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 
 st.title("ClashWiz")
-st.caption("Clash Royale Companion Interface")
+st.caption("All Clash Royale Cards")
 
 st.divider()
 
-# =========================================================
-# SEARCH + FILTER
-# =========================================================
+search = st.text_input("Search Card")
 
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    search = st.text_input("Search Card")
-
-with col2:
-    category = st.selectbox(
-        "Category",
-        ["All", "Troops", "Spells", "Buildings"]
-    )
+filtered_cards = [
+    card for card in CARD_LIST
+    if search.lower() in card.replace("_"," ").lower()
+]
 
 # =========================================================
-# FILTER LOGIC
-# =========================================================
-
-filtered_cards = []
-
-for key in card_keys:
-    card = card_data[key]
-
-    if search.lower() not in card["name"].lower():
-        continue
-
-    if category != "All" and card["category"] != category:
-        continue
-
-    filtered_cards.append(key)
-
-# =========================================================
-# CARD GRID
+# 8 CARDS PER ROW
 # =========================================================
 
 st.subheader("Cards")
 
-cols = st.columns(4)
+cols = st.columns(8)
 
 for i, key in enumerate(filtered_cards):
-    card = card_data[key]
+
     image_url = f"{BASE_IMAGE_URL}/{key.replace('_','-')}.png"
 
-    with cols[i % 4]:
-        st.image(image_url, use_container_width=True)
+    with cols[i % 8]:
+        st.image(image_url, width=90)
 
-        if st.button(card["name"], key=f"btn_{key}"):
+        if st.button(key.replace("_"," ").title(), key=f"btn_{key}"):
             st.session_state.selected_card = key
 
 # =========================================================
@@ -155,28 +126,11 @@ for i, key in enumerate(filtered_cards):
 
 if "selected_card" in st.session_state:
 
-    selected = card_data[st.session_state.selected_card]
-    detail_image_url = f"{BASE_IMAGE_URL}/{st.session_state.selected_card.replace('_','-')}.png"
-
     st.divider()
-    st.subheader(selected["name"])
-    st.image(detail_image_url, width=220)
+    name = st.session_state.selected_card.replace("_"," ").title()
+    detail_url = f"{BASE_IMAGE_URL}/{st.session_state.selected_card.replace('_','-')}.png"
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Elixir Cost", selected["elixir"])
-
-    with col2:
-        st.metric("Rarity", selected["rarity"])
-
-    with col3:
-        st.metric("Category", selected["category"])
-
-    st.markdown("### Win Rate")
-    st.write("Coming soon from analytics.")
-
-    st.markdown("### Hard Counters")
-    st.write("Coming soon from matchup engine.")
+    st.subheader(name)
+    st.image(detail_url, width=200)
 
 st.markdown('</div>', unsafe_allow_html=True)
