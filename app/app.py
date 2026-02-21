@@ -64,7 +64,7 @@ BASE_IMAGE_URL = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-assets/mast
 
 CARD_LIST = [
     "archers","arrows","baby_dragon","balloon","barbarians","barbarian_barrel",
-    "battle_healer","battle_ram","bats","bomb_tower","bombers","bowler",
+    "battle_healer","battle_ram","bats","bomb_tower","bomber","bowler",
     "cannon","cannon_cart","clone","dark_prince","dart_goblin","earthquake",
     "electro_dragon","electro_giant","electro_spirit","elite_barbarians",
     "elixir_collector","executioner","fire_spirits","fireball","fisherman",
